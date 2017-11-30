@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.bd.dao.SrtHotsearchDao">
+    
+	<sql id="srtHotsearchColumns">
+		a.id AS "id",
+		a.class_code AS "classCode",
+		a.kind_code AS "kindCode",
+		a.text_type AS "textType",
+		a.keyword AS "keyword",
+		a.sort AS "sort",
+		a.channel AS "channel",
+		a.level AS "level",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="srtHotsearchJoins">
+	</sql>
+    
+	<select id="get" resultType="SrtHotsearch">
+		SELECT 
+			<include refid="srtHotsearchColumns"/>
+		FROM srt_hotsearch a
+		<include refid="srtHotsearchJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findListByCopy" resultType="int">
+		SELECT 
+			count(*)
+		FROM srt_hotsearch a
+		<include refid="srtHotsearchJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="classCode != null and classCode != '' ">
+				AND a.class_code = #{classCode}
+			</if>
+			<if test="kindCode != null and kindCode != ''">
+				AND a.kind_code = #{kindCode}
+			</if>
+			<if test="keyword != null and keyword != ''">
+				AND a.keyword = #{keyword}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findList" resultType="SrtHotsearch">
+		SELECT 
+			<include refid="srtHotsearchColumns"/>
+		FROM srt_hotsearch a
+		<include refid="srtHotsearchJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="classCode != null and classCode != '' and classCode != 'all'">
+				AND a.class_code = #{classCode}
+			</if>
+			<if test="kindCode != null and kindCode != ''">
+				AND a.kind_code = #{kindCode}
+			</if>
+			<if test="textType != null and textType != ''">
+				AND a.text_type = #{textType}
+			</if>
+			<if test="keyword != null and keyword != ''">
+				AND a.keyword LIKE 
+					<if test="dbName == 'oracle'">'%'||#{keyword}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{keyword}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{keyword},'%')</if>
+			</if>
+			<if test="level != null and level != ''">
+				AND a.level = #{level}
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			<if test="beginUpdateDate != null and endUpdateDate != null and beginUpdateDate != '' and endUpdateDate != ''">
+				AND a.update_date BETWEEN #{beginUpdateDate} AND #{endUpdateDate}
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SrtHotsearch">
+		SELECT 
+			<include refid="srtHotsearchColumns"/>
+		FROM srt_hotsearch a
+		<include refid="srtHotsearchJoins"/>
+		<where>
+			
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO srt_hotsearch(
+			id,
+			class_code,
+			kind_code,
+			text_type,
+			keyword,
+			sort,
+			channel,
+			level,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{classCode},
+			#{kindCode},
+			#{textType},
+			#{keyword},
+			#{sort},
+			#{channel},
+			#{level},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE srt_hotsearch SET 	
+			class_code = #{classCode},
+			kind_code = #{kindCode},
+			text_type = #{textType},
+			keyword = #{keyword},
+			sort = #{sort},
+			channel = #{channel},
+			level = #{level},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE srt_hotsearch SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.thinkgem.jeesite.modules.log.dao.SrtTablogsubDao">
+    
+	<sql id="srtTablogsubColumns">
+		a.id AS "id",
+		a.mid AS "srtTablogMain.id",
+		a.tab_key AS "tabKey",
+		a.tab_name AS "tabName",
+		a.field AS "field",
+		a.field_name AS "fieldName",
+		a.old_value AS "oldValue",
+		a.new_value AS "newValue",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="srtTablogsubJoins">
+		LEFT JOIN srt_tablogmain b ON b.id = a.mid
+	</sql>
+    
+	<select id="get" resultType="SrtTablogsub">
+		SELECT 
+			<include refid="srtTablogsubColumns"/>
+		FROM srt_tablogsub a
+		<include refid="srtTablogsubJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SrtTablogsub">
+		SELECT 
+			<include refid="srtTablogsubColumns"/>
+		FROM srt_tablogsub a
+		<include refid="srtTablogsubJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="srtTablogMain != null and srtTablogMain.id != null and srtTablogMain.id != ''">
+				AND a.mid = #{srtTablogMain.id}
+			</if>
+			<if test="tabKey != null and tabKey != ''">
+				AND a.tab_key LIKE 
+					<if test="dbName == 'oracle'">'%'||#{tabKey}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{tabKey}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{tabKey},'%')</if>
+			</if>
+			<if test="tabName != null and tabName != ''">
+				AND a.tab_name = #{tabName}
+			</if>
+			<if test="field != null and field != ''">
+				AND a.field = #{field}
+			</if>
+			<if test="fieldName != null and fieldName != ''">
+				AND a.field_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{fieldName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{fieldName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{fieldName},'%')</if>
+			</if>
+			<if test="createBy != null and createBy.id != null and createBy.id != ''">
+				AND a.create_by = #{createBy.id}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<if test="updateBy != null and updateBy.id != null and updateBy.id != ''">
+				AND a.update_by = #{updateBy.id}
+			</if>
+			<if test="beginUpdateDate != null and endUpdateDate != null and beginUpdateDate != '' and endUpdateDate != ''">
+				AND a.update_date BETWEEN #{beginUpdateDate} AND #{endUpdateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SrtTablogsub">
+		SELECT 
+			<include refid="srtTablogsubColumns"/>
+		FROM srt_tablogsub a
+		<include refid="srtTablogsubJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO srt_tablogsub(
+			id,
+			mid,
+			tab_key,
+			tab_name,
+			field,
+			field_name,
+			old_value,
+			new_value,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{srtTablogMain.id},
+			#{tabKey},
+			#{tabName},
+			#{field},
+			#{fieldName},
+			#{oldValue},
+			#{newValue},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE srt_tablogsub SET 	
+			tab_key = #{tabKey},
+			tab_name = #{tabName},
+			field = #{field},
+			field_name = #{fieldName},
+			old_value = #{oldValue},
+			new_value = #{newValue},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE srt_tablogsub SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		<choose>
+			<when test="id !=null and id != ''">
+				WHERE id = #{id}
+			</when>
+			<otherwise>
+				WHERE mid = #{srtTablogMain.id}
+			</otherwise>
+		</choose>
+	</update>
+	
+</mapper>
